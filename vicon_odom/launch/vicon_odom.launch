@@ -1,5 +1,5 @@
 <launch>
-  <arg name="model"/>
+  <arg name="model" default="Quad8"/>
   <arg name="child_frame_id" default="$(arg model)/base_link"/>
   <arg name="publish_tf" default="false"/>
   <arg name="vicon_fps" default="100"/>

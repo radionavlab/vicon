@@ -4,6 +4,8 @@
 #include <ros/ros.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <nav_msgs/Odometry.h>
 
 #include "vicon_odom/filter.h"
 #include "vicon/Subject.h"
@@ -24,6 +26,7 @@ class ViconOdom
 
   vicon_odom::KalmanFilter kf_;
   ros::Publisher odom_pub_;
+  ros::Publisher mocap_pub_;
   std::string child_frame_id_;
   tf2_ros::TransformBroadcaster tf_broadcaster_;
   bool publish_tf_;

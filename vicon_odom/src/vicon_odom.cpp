@@ -1,7 +1,6 @@
 #include "vicon_odom/vicon_odom.hpp"
 
 #include <Eigen/Geometry>
-#include <nav_msgs/Odometry.h>
 
 namespace vicon_odom
 {
@@ -38,8 +37,9 @@ ViconOdom::ViconOdom(ros::NodeHandle &nh)
                  0.01 * KalmanFilter::ProcessCov_t::Identity(),
                  proc_noise_diag.asDiagonal(), meas_noise_diag.asDiagonal());
 
-  // Initialize publisher and subscriber
+  // Initialize publishers and subscriber
   odom_pub_ = nh.advertise<nav_msgs::Odometry>("odom", 10);
+  mocap_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/mavros/mocap/pose", 10);
   vicon_sub_ = nh.subscribe("vicon_subject", 10, &ViconOdom::ViconCallback,
                             this, ros::TransportHints().tcpNoDelay());
 }
@@ -106,6 +106,17 @@ void ViconOdom::ViconCallback(const vicon::Subject::ConstPtr &msg)
     PublishTransform(odom_msg.pose.pose, odom_msg.header,
                      odom_msg.child_frame_id);
   }
+
+  // Publish message for px4 mocap topic
+  geometry_msgs::PoseStamped mocap_msg;
+  mocap_msg.pose.position.x = msg->position.x;
+  mocap_msg.pose.position.y = msg->position.y;
+  mocap_msg.pose.position.z = msg->position.z;
+  mocap_msg.pose.orientation = msg->orientation;
+  mocap_msg.header = msg->header;
+  mocap_msg.header.frame_id = "fcu";
+  mocap_pub_.publish(mocap_msg);
+
 }
 
 void ViconOdom::PublishTransform(const geometry_msgs::Pose &pose,
