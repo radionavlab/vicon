@@ -67,7 +67,7 @@ void ViconOdom::ViconCallback(const vicon::Subject::ConstPtr &msg)
 
   nav_msgs::Odometry odom_msg;
   odom_msg.header = msg->header;
-  odom_msg.child_frame_id = child_frame_id_;
+  odom_msg.child_frame_id = msg->header.frame_id;
   odom_msg.pose.pose.position.x = state(0);
   odom_msg.pose.pose.position.y = state(1);
   odom_msg.pose.pose.position.z = state(2);
