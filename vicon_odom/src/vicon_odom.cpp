@@ -15,9 +15,15 @@ ViconOdom::ViconOdom(ros::NodeHandle &nh)
 
   // There should only be one vicon_fps, so we read from nh
   double dt, vicon_fps;
-  nh.param("vicon_fps", vicon_fps, 100.0);
+  nh.getParam("vicon_fps", vicon_fps);
   ROS_ASSERT(vicon_fps > 0.0);
   dt = 1 / vicon_fps;
+  ROS_INFO("Vicon FPS set to %f.", vicon_fps);
+
+  // Get model name
+  std::string model_name;
+  nh.getParam("model", model_name);
+  ROS_INFO("Model name: %s", model_name.c_str());
 
   // Initialize KalmanFilter
   KalmanFilter::State_t proc_noise_diag;
@@ -38,8 +44,10 @@ ViconOdom::ViconOdom(ros::NodeHandle &nh)
                  proc_noise_diag.asDiagonal(), meas_noise_diag.asDiagonal());
 
   // Initialize publishers and subscriber
-  odom_pub_ = nh.advertise<nav_msgs::Odometry>("odom", 10);
-  mocap_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/mavros/mocap/pose", 10);
+  std::string odom_topic = "/" + model_name + "/local_odom";
+  std::string mocap_topic = "/" + model_name + "/mavros/mocap/pose";
+  odom_pub_ = nh.advertise<nav_msgs::Odometry>(odom_topic, 10);
+  mocap_pub_ = nh.advertise<geometry_msgs::PoseStamped>(mocap_topic, 10);
   vicon_sub_ = nh.subscribe("vicon_subject", 10, &ViconOdom::ViconCallback,
                             this, ros::TransportHints().tcpNoDelay());
 }
