@@ -31,6 +31,7 @@ class ViconOdom
   tf2_ros::TransformBroadcaster tf_broadcaster_;
   bool publish_tf_;
   ros::Subscriber vicon_sub_;
+  std::string model_name_;
 };
 
 } // vicon_odom

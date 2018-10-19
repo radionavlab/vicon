@@ -21,9 +21,8 @@ ViconOdom::ViconOdom(ros::NodeHandle &nh)
   ROS_INFO("Vicon FPS set to %f.", vicon_fps);
 
   // Get model name
-  std::string model_name;
-  nh.getParam("model", model_name);
-  ROS_INFO("Model name: %s", model_name.c_str());
+  nh.getParam("model", model_name_);
+  ROS_INFO("Model name: %s", model_name_.c_str());
 
   // Initialize KalmanFilter
   KalmanFilter::State_t proc_noise_diag;
@@ -44,8 +43,8 @@ ViconOdom::ViconOdom(ros::NodeHandle &nh)
                  proc_noise_diag.asDiagonal(), meas_noise_diag.asDiagonal());
 
   // Initialize publishers and subscriber
-  std::string odom_topic = "/" + model_name + "/local_odom";
-  std::string mocap_topic = "/" + model_name + "/mavros/mocap/pose";
+  std::string odom_topic = "/" + model_name_ + "/local_odom";
+  std::string mocap_topic = "/" + model_name_ + "/mavros/mocap/pose";
   odom_pub_ = nh.advertise<nav_msgs::Odometry>(odom_topic, 10);
   mocap_pub_ = nh.advertise<geometry_msgs::PoseStamped>(mocap_topic, 10);
   vicon_sub_ = nh.subscribe("vicon_subject", 10, &ViconOdom::ViconCallback,
@@ -73,9 +72,14 @@ void ViconOdom::ViconCallback(const vicon::Subject::ConstPtr &msg)
   const KalmanFilter::State_t state = kf_.getState();
   const KalmanFilter::ProcessCov_t proc_noise = kf_.getProcessNoise();
 
+  // Observation: frame_id and child_frame_id have to coincide. This is a 'hack' because
+  // twist here is calculated in inertial frame. px4_control checks if frame_id and child_frame_id
+  // are the same to identify whether twist is in inertial or body frame
   nav_msgs::Odometry odom_msg;
   odom_msg.header = msg->header;
-  odom_msg.child_frame_id = msg->header.frame_id;
+  odom_msg.header.stamp = ros::Time::now();
+  odom_msg.header.frame_id = "map";
+  odom_msg.child_frame_id = odom_msg.header.frame_id;
   odom_msg.pose.pose.position.x = state(0);
   odom_msg.pose.pose.position.y = state(1);
   odom_msg.pose.pose.position.z = state(2);
@@ -115,7 +119,7 @@ void ViconOdom::ViconCallback(const vicon::Subject::ConstPtr &msg)
                      odom_msg.child_frame_id);
   }
 
-  // Publish message for px4 mocap topic
+  // Publish message for px4 mocap topic (frame id has to be fcu)
   geometry_msgs::PoseStamped mocap_msg;
   mocap_msg.pose.position.x = msg->position.x;
   mocap_msg.pose.position.y = msg->position.y;

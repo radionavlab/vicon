@@ -35,6 +35,18 @@
     <remap from="~odom" to="/$(arg model2)/odom"/>
   </node>
 
+  <arg name="model3" default="hippogryph"/>
+  <arg name="child_frame_id3" default="$(arg model3)/base_link"/>
+  <node pkg="vicon_odom" type="vicon_odom" name="$(arg model3)"
+    output="$(arg output)" ns="vicon">
+    <param name="model" type="string" value="$(arg model3)"/>
+    <param name="child_frame_id" type="string" value="$(arg child_frame_id3)"/>
+    <param name="publish_tf" type="bool" value="$(arg publish_tf)"/>
+    <param name="vicon_fps" type="int" value="$(arg vicon_fps)"/>
+    <remap from="~vicon_subject" to="$(arg model3)"/>
+    <remap from="~odom" to="/$(arg model3)/odom"/>
+  </node>
+
   <node respawn="true" pkg="joy" type="joy_node" name="joy" >
         <param name="dev" type="string" value="/dev/input/js0" />
         <param name="deadzone" value="0.15" />
