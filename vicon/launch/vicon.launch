@@ -7,10 +7,7 @@
     <param name="calib_files_dir" value="$(find vicon)/calib"/>
   </node>
 
-  <arg name="publish_tf" default="false"/>
-  <arg name="vicon_fps" default="500"/>
-  <arg name="output" default="screen"/>
-
+  <!-- Launch odometry for all wanted vehicles -->
   <include file="$(find vicon)/launch/odom_template.launch">
       <arg name="model" value="Frodo" />
   </include>
