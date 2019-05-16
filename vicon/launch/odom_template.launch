@@ -1,6 +1,6 @@
 <launch>
   <arg name="publish_tf" default="false"/>
-  <arg name="vicon_fps" default="200"/>
+  <arg name="vicon_fps" default="500"/>
   <arg name="output" default="screen"/>
 
   <arg name="model" default="Bilbo"/>
@@ -14,5 +14,13 @@
     <remap from="~vicon_subject" to="$(arg model)"/>
     <remap from="~odom" to="/$(arg model)/odom"/>
   </node>
+
+  <group ns="$(arg model)">
+        <!-- Tf server for updating vehicles tf's -->
+        <node pkg="tf_publisher" type="tf_publisher" name="tf_publisher" output="screen">
+            <param name="namespace" value="$(arg model)"/>
+            <param name="input_odometry" value="/$(arg model)/local_odom"/>
+        </node>
+    </group>
 
 </launch>
